@@ -12,4 +12,7 @@ export default {
 
 <style lang="sass">
 @import '../node_modules/bulma/bulma.sass'
+
+html
+  overflow: auto !important
 </style>

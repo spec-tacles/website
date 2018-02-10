@@ -21,9 +21,9 @@
 
         <div class="navbar-end">
           <div class="navbar-item has-dropdown is-hoverable">
-            <a class="navbar-link" href="/documentation/overview/start/">
+            <div class="navbar-link">
               Library
-            </a>
+            </div>
             <div class="navbar-dropdown is-right is-boxed">
               <router-link v-for="(value, lb) in libraries" :key="lb" class="navbar-item" :class="{ 'is-active': lb === library }" :to="`/docs/${lb}`">
                 {{ lb }}
@@ -32,9 +32,9 @@
           </div>
 
           <div class="navbar-item has-dropdown is-hoverable">
-            <a class="navbar-link" href="/documentation/overview/start/">
+            <div class="navbar-link">
               Version
-            </a>
+            </div>
             <div class="navbar-dropdown is-right is-boxed">
               <router-link v-for="br in libraries[this.$route.params.library]" :key="br" class="navbar-item" :class="{ 'is-active': br === version }" :to="`/docs/${library}/${br}`">
                 {{ br }}
@@ -63,13 +63,7 @@
       </div>
     </section>
 
-    <iframe
-      id="iframe"
-      height="0"
-      frameborder="0"
-      scrolling="no"
-      @load="resize">
-    </iframe>
+    <iframe id="iframe" frameborder="0" @load="load"></iframe>
   </div>
 </template>
 
@@ -86,17 +80,7 @@ export default {
   },
 
   methods: {
-    resize(obj) {
-      obj.target.contentWindow.scroll(0, 0);
-      obj.target.style.height = 'calc(100vh - 3.75rem)';
-      obj.target.style.height = `${obj.target.contentWindow.document.body.scrollHeight}px`;
-      if (obj.target.contentWindow.location.hash.substr(1)) {
-        const el = obj.target.contentWindow.document.getElementById(obj.target.contentWindow.location.hash.substr(1));
-        if (el) {
-          el.scrollIntoView();
-        }
-      }
-      // alert(obj.target.contentWindow.location.hash);
+    load() {
       document.getElementById('loading').style.opacity = '0';
     },
 
@@ -120,8 +104,7 @@ export default {
       this.$data.library = library;
       this.$data.version = version;
 
-      const target = document.getElementById('iframe');
-      target.src = `/static/docs/${library}/${version}/index.html`;
+      document.getElementById('iframe').src = `/static/docs/${library}/${version}/index.html`;
     },
   },
 
@@ -141,8 +124,17 @@ export default {
 <style lang="sass" scoped>
 @import '../../node_modules/bulma/bulma.sass'
 
+.docs
+  height: 100vh
+
 iframe
   width: 100%
+  position: absolute
+  top: $navbar-height
+  bottom: 0
+  left: 0
+  right: 0
+  height: calc(100vh - #{$navbar-height})
 
 nav
   z-index: 10
