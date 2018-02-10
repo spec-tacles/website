@@ -12,3 +12,6 @@ yarn-error.log*
 *.ntvs*
 *.njsproj
 *.sln
+
+deploy/deploy-key
+deploy/deploy-key.pub
