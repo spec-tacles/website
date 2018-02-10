@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Amqp.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Amqp.html">Amqp</a><ul class='methods'><li data-type='method'><a href="Amqp.html#connect">connect</a></li><li data-type='method'><a href="Amqp.html#publish">publish</a></li><li data-type='method'><a href="Amqp.html#subscribe">subscribe</a></li><li data-type='method'><a href="Amqp.html#unsubscribe">unsubscribe</a></li></ul></li><li><a href="Broker.html">Broker</a><ul class='methods'><li data-type='method'><a href="Broker.html#subscribe">subscribe</a></li><li data-type='method'><a href="Broker.html#unsubscribe">unsubscribe</a></li></ul></li><li><a href="Local.html">Local</a><ul class='methods'><li data-type='method'><a href="Local.html#connect">connect</a></li><li data-type='method'><a href="Local.html#publish">publish</a></li><li data-type='method'><a href="Local.html#subscribe">subscribe</a></li><li data-type='method'><a href="Local.html#unsubscribe">unsubscribe</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Amqp.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const util_1 = require("@spectacles/util");
+const amqp = require("amqplib");
+const Base_1 = require("./Base");
+/**
+ * A broker for AMQP clients. Probably most useful for RabbitMQ.
+ * @extends Broker
+ */
+class Amqp extends Base_1.default {
+    /**
+     * @constructor
+     * @param {Client} client The client of this broker
+     * @param {string} [group='default'] The group of this broker
+     */
+    constructor(group = 'default') {
+        super();
+        /**
+         * The AMQP channel currently connected to.
+         * @type {?amqp.Channel}
+         */
+        this.channel = undefined;
+        /**
+         * The AMQP exchange of this broker.
+         * @type {string}
+         */
+        this.group = '';
+        /**
+         * The consumers that this broker has registered.
+         * @type {Object&lt;string, string>}
+         * @private
+         */
+        this._consumers = {};
+        this.group = group;
+    }
+    /**
+     * Connect this broker to your AMQP client.
+     * @param {string} url The URL of your AMQP client
+     * @param {?*} options Options to connect to the AMQP client
+     * @returns {Promise&lt;void>}
+     */
+    async connect(url, options) {
+        const connection = await amqp.connect(`amqp://${url}`, options);
+        this.channel = await connection.createChannel();
+        await this.channel.assertExchange(this.group, 'direct');
+    }
+    /**
+     * Subscribe this broker to some AMQP queues.
+     * @param {string|Iterable&lt;string>} events The events to subscribe to
+     * @param {{consume: ?amqp.Options.Consume, assert: ?amqp.Options.AssertQueue}} options The connection options
+     * @returns {Promise&lt;amqp.Replies.Consume[]>}
+     */
+    subscribe(events, options = {}) {
+        super.subscribe(events);
+        if (typeof events === 'string')
+            events = [events];
+        if (!Array.isArray(events))
+            events = Array.from(events);
+        // register consumers in parallel
+        return Promise.all(events.map(async (event) => {
+            // setup queue
+            const queue = `${this.group}:${event}`;
+            await this._channel.assertQueue(queue, options.assert);
+            await this._channel.bindQueue(queue, this.group, event);
+            // register consumer
+            const consumer = await this._channel.consume(queue, msg => {
+                // emit consumed messages with an acknowledger function
+                if (msg)
+                    this.emit(event, util_1.decode(msg.content), () => this._channel.ack(msg));
+            }, options.consume);
+            this._consumers[event] = consumer.consumerTag;
+            return consumer;
+        }));
+    }
+    /**
+     * Unsubscribe this broker from some AMQP queues.
+     * @param {string | string[]} events The channels to unsubscribe from
+     * @returns {Promise&lt;Array&lt;undefined>>}
+     */
+    unsubscribe(events) {
+        super.unsubscribe(events);
+        if (typeof events === 'string')
+            events = [events];
+        return Promise.all(events.map(chan => {
+            if (this._consumers[chan]) {
+                const cancel = this._channel.cancel(this._consumers[chan]);
+                delete this._consumers[chan];
+                return cancel;
+            }
+            return Promise.resolve();
+        }));
+    }
+    /**
+     * Publish an event to the AMQP broker.
+     * @param {string} event The event to publish
+     * @param {*} data The data to publish
+     * @param {?amqp.Options.Publish} options AMQP publish options
+     */
+    publish(event, data, options) {
+        return this._channel.publish(this.group, event, util_1.encode(data), options);
+    }
+    /**
+     * Convenience accessor for the AMQP channel.
+     * @throws {Error} When the channel doesn't exist
+     * @returns {amqp.Channel} The AMQP channel.
+     * @protected
+     */
+    get _channel() {
+        if (!this.channel)
+            throw new Error('no available amqp channel');
+        return this.channel;
+    }
+}
+exports.default = Amqp;
+
+//# sourceMappingURL=Amqp.js.map
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Feb 10 2018 13:33:04 GMT-0600 (Central Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

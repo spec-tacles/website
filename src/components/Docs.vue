@@ -88,7 +88,7 @@ export default {
   methods: {
     resize(obj) {
       obj.target.contentWindow.scroll(0, 0);
-      obj.target.style.height = '0px';
+      obj.target.style.height = 'calc(100vh - 3.75rem)';
       obj.target.style.height = `${obj.target.contentWindow.document.body.scrollHeight}px`;
       if (obj.target.contentWindow.location.hash.substr(1)) {
         const el = obj.target.contentWindow.document.getElementById(obj.target.contentWindow.location.hash.substr(1));
