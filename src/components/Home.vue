@@ -32,7 +32,7 @@
             <article class="tile is-child notification is-success library">
               <div class="content">
                 <p class="title">spectacles.js <span class="tag">Node.JS</span></p>
-                <p class="subtitle">The official Node.JS Spectacles library for Discord.JS</p>
+                <p class="subtitle">The Javascript spectacles client.</p>
                 <div class="content">
                   <div class="columns">
 
@@ -66,7 +66,48 @@
                 </div>
               </div>
             </article>
-            <pre class="install-client"><code>npm i spectacles</code></pre>
+            <pre class="install-client"><code>npm i @spectacles/spectacles.js</code></pre>
+          </div>
+
+          <div class="column is-4">
+            <article class="tile is-child notification is-success library">
+              <div class="content">
+                <p class="title">gateway <span class="tag">Node.JS</span></p>
+                <p class="subtitle">The gateway to Discord.</p>
+                <div class="content">
+                  <div class="columns">
+
+                    <div class="column">
+                      <span data-balloon="Maintainer" data-balloon-pos="up">
+                        <span class="icon">
+                          <i class="fa fa-wrench"></i>
+                        </span>
+                        <span>Spectacles</span>
+                      </span>
+                    </div>
+
+                    <div class="column has-text-centered">
+                      <router-link to="/docs/gateway" class="client-link">
+                        <span class="icon">
+                          <i class="fa fa-book"></i>
+                        </span>
+                        <span class="text">Docs</span>
+                      </router-link>
+                    </div>
+
+                    <div class="column has-text-right">
+                      <a href="https://github.com/spec-tacles/gateway" class="client-link">
+                        <span class="icon">
+                          <i class="fa fa-github"></i>
+                        </span>
+                        <span class="text">Repository</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <pre class="install-client"><code>npm i @spectacles/gateway</code></pre>
           </div>
         </div>
       </div>

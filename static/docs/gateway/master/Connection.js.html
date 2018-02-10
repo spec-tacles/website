@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Connection.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Client.html">Client</a><ul class='methods'><li data-type='method'><a href="Client.html#fetchGateway">fetchGateway</a></li><li data-type='method'><a href="Client.html#spawn">spawn</a></li></ul></li><li><a href="Connection.html">Connection</a><ul class='methods'><li data-type='method'><a href="Connection.html#connect">connect</a></li><li data-type='method'><a href="Connection.html#disconnect">disconnect</a></li><li data-type='method'><a href="Connection.html#heartbeat">heartbeat</a></li><li data-type='method'><a href="Connection.html#receive">receive</a></li><li data-type='method'><a href="Connection.html#reconnect">reconnect</a></li><li data-type='method'><a href="Connection.html#resume">resume</a></li><li data-type='method'><a href="Connection.html#send">send</a></li></ul></li></ul><h3><a href="global.html">Global</a></h3>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Connection.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const WebSocket = require("ws");
+const os = require("os");
+const throttle = require("p-throttle");
+const util_1 = require("@spectacles/util");
+const CloseEvent_1 = require("../util/CloseEvent");
+const { OP, Dispatch } = util_1.Constants;
+const { Codes, Error } = util_1.Errors;
+let erlpack;
+try {
+    erlpack = require('erlpack');
+}
+catch (e) {
+    // do nothing
+}
+const identify = throttle(async function () {
+    if (!this.client.gateway)
+        throw new Error(Codes.NO_GATEWAY);
+    await this.send(OP.IDENTIFY, {
+        token: this.client.token,
+        properties: {
+            $os: os.platform(),
+            $browser: 'spectacles',
+            $device: 'spectacles',
+        },
+        compress: false,
+        large_threshold: 250,
+        shard: [this.shard, this.client.gateway.shards],
+        presence: {},
+    });
+}, 1, 5e3);
+/**
+ * A Discord Gateway payload.
+ * @typedef Payload
+ * @type {object}
+ * @property {?string} t
+ * @property {?number} s
+ * @property {number} op
+ * @property {*} d
+ */
+/**
+ * A connection to the Discord Gateway.
+ */
+class Connection {
+    /**
+     * @constructor
+     * @param {Client} client The client
+     * @param {number} shard The shard of this connection
+     */
+    constructor(client, shard) {
+        /**
+         * The connection manager.
+         * @type {Client}
+         * @readonly
+         */
+        this.client = client;
+        /**
+         * The shard that this connection represents.
+         * @type {number}
+         * @readonly
+         */
+        this.shard = shard;
+        /**
+         * The API version to use.
+         * @type {number}
+         * @default [6]
+         * @readonly
+         */
+        this.version = 6;
+        this.receive = this.receive.bind(this);
+        this.handleClose = this.handleClose.bind(this);
+        this.handleError = this.handleError.bind(this);
+        this.send = throttle(this.send.bind(this), 120, 60);
+        /**
+         * Send an identify packet.
+         * @returns {Promise&lt;undefined>}
+         */
+        this.identify = identify;
+        /**
+         * The underlying websocket connection.
+         * @type {?WebSocket}
+         * @private
+         */
+        this._ws = undefined;
+        /**
+         * The sequence of this connection.
+         * @type {number}
+         * @default [-1]
+         * @private
+         */
+        this._seq = -1;
+        /**
+         * The session identifier of this connection.
+         * @type {?string}
+         * @private
+         */
+        this._session = null;
+        /**
+         * The heartbeater interval.
+         * @type {?Timer}
+         * @private
+         */
+        this._heartbeater = undefined;
+        /**
+         * Whether the Discord Gateway has acknowledged the previous heartbeat.
+         * @type {boolean}
+         * @private
+         */
+        this._acked = true;
+    }
+    /**
+     * The sequence of this connection.
+     * @returns {number}
+     */
+    get seq() {
+        return this._seq;
+    }
+    /**
+     * The session identifier of this connection.
+     * @returns {?string}
+     */
+    get session() {
+        return this._session;
+    }
+    /**
+     * The underlying websocket connection to the gateway.
+     * @returns {WebSocket}
+     * @throws {Error} Throws if there is no connection available.
+     */
+    get ws() {
+        if (!this._ws)
+            throw new Error(Codes.NO_WEBSOCKET);
+        return this._ws;
+    }
+    /**
+     * Connect to the gateway.
+     * @returns {Promise&lt;undefined>}
+     */
+    async connect() {
+        if (!this.client.gateway)
+            throw new Error(Codes.NO_GATEWAY);
+        this._emit('connect');
+        this._ws = new WebSocket(`${this.client.gateway.url}?v=${this.version}&amp;encoding=${util_1.encoding}`);
+        this._ws.on('message', this.receive);
+        this._ws.on('close', this.handleClose);
+        this._ws.on('error', this.handleError);
+        this._acked = true;
+        await new Promise(r => this.ws.once('open', r));
+    }
+    /**
+     * Disconnect from the gateway.
+     * @param {?number} code The code to close the connection with, if any.
+     * @returns {Promise&lt;undefined>}
+     */
+    async disconnect(code) {
+        if (this.ws.readyState === WebSocket.CLOSED)
+            return Promise.resolve();
+        this._emit('disconnect');
+        this.ws.removeListener('message', this.receive);
+        this.ws.removeListener('close', this.handleClose);
+        this.ws.removeListener('error', this.handleError);
+        if (this.ws.readyState !== WebSocket.CLOSING)
+            this.ws.close(code);
+        this._seq = -1;
+        this._session = null;
+        if (this._heartbeater)
+            clearInterval(this._heartbeater);
+        await new Promise(r => this.ws.once('close', r));
+    }
+    /**
+     * Disconnect and reconnect to the gateway after a 1s timeout.
+     * @param {?number} code The code to close the connection with, if any.
+     * @returns {Promise&lt;undefined>}
+     */
+    async reconnect(code) {
+        await this.disconnect(code);
+        await new Promise(r => setTimeout(r, 1e3 + Math.random() - 0.5));
+        await this.connect();
+    }
+    /**
+     * Resume your session with the gateway.
+     * @returns {Promise&lt;undefined>}
+     * @throws {Error} Throws if there's no session available to resume.
+     */
+    resume() {
+        if (!this.session)
+            throw new Error(Codes.NO_SESSION);
+        return this.send(OP.RESUME, {
+            token: this.client.token,
+            seq: this.seq,
+            session: this.session,
+        });
+    }
+    /**
+     * Send a heartbeat to the gateway.
+     * @returns {Promise&lt;undefined>}
+     */
+    heartbeat() {
+        return this.send(OP.HEARTBEAT, this.seq);
+    }
+    /**
+     * Handle data as received from the websocket.
+     * @param {WebSocket.Data} data The data to receive
+     * @returns {undefined}
+     */
+    receive(data) {
+        const decoded = util_1.decode(data);
+        this._emit('receive', decoded);
+        switch (decoded.op) {
+            case OP.DISPATCH:
+                if (decoded.s &amp;&amp; decoded.s > this._seq)
+                    this._seq = decoded.s;
+                if (decoded.t === Dispatch.READY)
+                    this._session = decoded.d.session_id;
+                this.client.emit(decoded.t, decoded.d);
+                break;
+            case OP.HEARTBEAT:
+                this.heartbeat();
+                break;
+            case OP.RECONNECT:
+                this.reconnect();
+                break;
+            case OP.INVALID_SESSION:
+                if (decoded.d)
+                    this.resume();
+                else
+                    this.reconnect();
+                break;
+            case OP.HELLO:
+                if (this._heartbeater)
+                    clearInterval(this._heartbeater);
+                this._heartbeater = setInterval(() => {
+                    if (this._acked) {
+                        this.heartbeat();
+                        this._acked = false;
+                    }
+                    else {
+                        this.reconnect(4009);
+                    }
+                }, decoded.d.heartbeat_interval);
+                if (this._session)
+                    this.resume();
+                else
+                    this.identify();
+                break;
+            case OP.HEARTBEAT_ACK:
+                this._acked = true;
+                break;
+        }
+    }
+    /**
+     * Send data through the websocket connection.
+     * @param {number} op The OP to send
+     * @param {*} d The data to send
+     * @param {?string} t The event to send; use when sending an OP 0.
+     * @returns {Promise&lt;undefined>}
+     */
+    send(op, d, t) {
+        const data = { op, d };
+        if (op === OP.DISPATCH) {
+            data.t = t;
+            data.s = this._seq;
+        }
+        this._emit('send', data);
+        return new Promise((resolve, reject) => {
+            this.ws.send(util_1.encode(data), (err) => {
+                if (err)
+                    reject(err);
+                else
+                    resolve();
+            });
+        });
+    }
+    /**
+     * Handle the close of this connection.
+     * @param {number} code The code the connection closed with
+     * @param {string} reason The reason the connection closed
+     * @returns {Promise&lt;undefined>}
+     * @private
+     */
+    async handleClose(code, reason) {
+        this.client.emit('close', new CloseEvent_1.default(code, reason));
+        this._seq = -1;
+        if (this._heartbeater) {
+            clearInterval(this._heartbeater);
+            this._heartbeater = undefined;
+        }
+        switch (code) {
+            case 4004:
+            case 4010:
+            case 4011:// unrecoverable errors (disconnect)
+                return;
+            case 4000:// unknown error (reconnect)
+                break;
+            default:// other errors (clear session and reconnect)
+                this._session = null;
+                break;
+        }
+        if (this.client.reconnect)
+            await this.reconnect();
+    }
+    /**
+     * Handle an error with this connection.
+     * @param {*} err The error that occurred
+     * @returns {Promise&lt;undefined>}
+     * @private
+     */
+    async handleError(err) {
+        this._emit('error', err);
+        await this.reconnect();
+    }
+    _emit(event, ...data) {
+        return this.client.emit(event, this.shard, ...data);
+    }
+}
+exports.default = Connection;
+
+//# sourceMappingURL=Connection.js.map
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Feb 10 2018 12:49:26 GMT-0600 (Central Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
