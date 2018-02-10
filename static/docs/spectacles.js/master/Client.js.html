@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Client.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Client.html">Client</a><ul class='methods'><li data-type='method'><a href="Client.html#login">login</a></li><li data-type='method'><a href="Client.html#send">send</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#BrokerCreator">BrokerCreator</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Client.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const gateway_1 = require("@spectacles/gateway");
+const brokers_1 = require("@spectacles/brokers");
+const rest = require("@spectacles/rest");
+const util_1 = require("@spectacles/util");
+/**
+ * Create a broker, given a client.
+ * @name BrokerCreator
+ * @function
+ * @param {Client} client
+ * @returns {Broker}
+ */
+/**
+ * @typedef Options
+ * @type {object}
+ * @property {boolean|WebsocketManager|WSOPtions} [ws]
+ * @property {object} [broker]
+ * @property {boolean} [broker.local] Convenience property for setting up local mode
+ * @property {BrokerCreator} [broker.consumer]
+ * @property {BrokerCreator} [broker.publisher]
+ */
+/**
+ * The base of any Spectacles app.
+ * @extends EventEmitter
+ */
+class Client {
+    /**
+     * @constructor
+     * @param {string} token The token to authenticate with
+     * @param {Options} [options={}] Options to construct this client with
+     * @returns {Client|ChainableQuery}
+     */
+    constructor(token, options = {}) {
+        this.token = '';
+        /**
+         * The authorization token.
+         * @name Client#token
+         * @type {string}
+         * @readonly
+         */
+        Object.defineProperty(this, 'token', { value: token });
+        /**
+         * The Axios instance this client is using.
+         * @type {AxiosInstance}
+         * @readonly
+         */
+        this.rest = rest(token, options.rest);
+        if (typeof options.gateway === 'function') {
+            /**
+             * The websocket manager this client is using, if any.
+             * @type {?Gateway}
+             */
+            this.gateway = new options.gateway(token);
+        }
+        else if (options.gateway === true) {
+            this.gateway = new gateway_1.default(token);
+        }
+        else if (options.gateway) {
+            this.gateway = new gateway_1.default(token, options.gateway);
+        }
+        if (!options.broker)
+            options.broker = {};
+        if (options.broker.local) {
+            /**
+             * The broker that handles messages coming *from* the Discord gateway.
+             * @type {Broker}
+             */
+            this.consumer = new brokers_1.Local();
+            /**
+             * The broker than handles message going *to* the Discord gateway.
+             * @type {Broker}
+             */
+            this.publisher = new brokers_1.Local();
+        }
+        else {
+            if (options.broker.consumer)
+                this.consumer = options.broker.consumer(this);
+            else
+                this.consumer = new brokers_1.Amqp('consumer');
+            if (options.broker.publisher)
+                this.publisher = options.broker.publisher(this);
+            else
+                this.publisher = new brokers_1.Amqp('publisher');
+        }
+    }
+    /**
+     * Send data through a Discord gateway shard.
+     * @param {number} shard The shard to send data on
+     * @param {string|number} opOrEvent The OP code/event to use (specifying an event will automatically use OP 0)
+     * @param {*} d The data to send
+     * @returns {Promise&lt;undefined>}
+     */
+    async send(shard, opOrEvent, d) {
+        const pk = typeof opOrEvent === 'string' ? { d, t: opOrEvent, op: util_1.Constants.OP.DISPATCH } : { op: opOrEvent, d };
+        await this.publisher.publish(shard.toString(), pk);
+    }
+    /**
+     * Connect the client to its brokers, subscribe to relevant events, and spawn shards if required.
+     * @param {string} [url='localhost'] The URL to connect to
+     * @param {string[]} [events=[]] The events to subscribe to
+     * @returns {Promise&lt;undefined>}
+     */
+    async login(url = 'localhost', events = [], shards) {
+        await this.consumer.connect(url);
+        await this.publisher.connect(url);
+        if ('gateway' in this &amp;&amp; this.gateway) {
+            for (const e of events)
+                this.gateway.on(e, data => this.consumer.publish(e, data));
+            await this.gateway.spawn(shards);
+            await this.publisher.subscribe(Array.from(this.gateway.connections.keys()).map(String));
+            for (const shard of this.gateway.connections.keys()) {
+                this.publisher.on(shard.toString(), (pk, ack) => {
+                    if (!this.gateway)
+                        throw new util_1.Errors.Error(util_1.Errors.Codes.NO_GATEWAY);
+                    if (ack)
+                        ack();
+                    const conn = this.gateway.connections.get(shard);
+                    if (conn)
+                        conn.send(pk.op, pk.d, pk.t);
+                });
+            }
+        }
+        else {
+            await this.consumer.subscribe(events);
+        }
+    }
+}
+exports.default = Client;
+
+//# sourceMappingURL=Client.js.map
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Feb 09 2018 18:33:09 GMT-0600 (Central Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
