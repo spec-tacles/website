@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>structures/Bucket.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Bucket.html">Bucket</a><ul class='methods'><li data-type='method'><a href="Bucket.html#.makeRoute">makeRoute</a></li><li data-type='method'><a href="Bucket.html#_start">_start</a></li><li data-type='method'><a href="Bucket.html#clear">clear</a></li><li data-type='method'><a href="Bucket.html#enqueue">enqueue</a></li></ul></li><li><a href="Query.html">Query</a><ul class='methods'><li data-type='method'><a href="Query.html#create">create</a></li><li data-type='method'><a href="Query.html#delete">delete</a></li><li data-type='method'><a href="Query.html#edit">edit</a></li><li data-type='method'><a href="Query.html#fetch">fetch</a></li><li data-type='method'><a href="Query.html#freeze">freeze</a></li><li data-type='method'><a href="Query.html#update">update</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#adapt">adapt</a></li><li><a href="global.html#default">default</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">structures/Bucket.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const axios_1 = require("axios");
+function pause(n) {
+    return new Promise(r => setTimeout(r, n));
+}
+/**
+ * A class for ratelimiting things.
+ */
+class Bucket {
+    constructor() {
+        this.queue = [];
+        /**
+         * The total number of requests that can be made.
+         * @type {number}
+         */
+        this.limit = Infinity;
+        /**
+         * Requests remaining in this ratelimit bucket.
+         * @type {number}
+         */
+        this.remaining = 1;
+        /**
+         * Whether this queue has started.
+         * @type {boolean}
+         * @protected
+         */
+        this._started = false;
+        /**
+         * Discord timestamp at which this bucket's ratelimits will be reset.
+         * @type {number}
+         * @protected
+         */
+        this._reset = 0;
+    }
+    /**
+     * Time difference between local client and remote server. Numbers > 0 indicate the remote server is ahead of your
+     * time. This number is averaged across the last 10 requests.
+     * @type {number}
+     * @static
+     */
+    static get timeDiff() {
+        return this._timeDiffs.reduce((a, b) => a + b, 0) / this._timeDiffs.length;
+    }
+    static set timeDiff(data) {
+        this._timeDiffs.unshift(data);
+        if (this._timeDiffs.length > 10)
+            this._timeDiffs.pop();
+    }
+    /**
+     * Make a route that can be used as a ratelimit bucket key.
+     * from https://github.com/abalabahaha/eris
+     * @param method The HTTP method
+     * @param url The URL for which to create a route
+     * @returns {string}
+     * @static
+     */
+    static makeRoute(method, url) {
+        let route = url
+            .replace(/\/([a-z-]+)\/(?:[0-9]{17,19})/g, (match, p) => {
+            return p === 'channels' || p === 'guilds' || p === 'webhooks' ? match : `/${p}/:id`;
+        })
+            .replace(/\/reactions\/[^/]+/g, '/reactions/:id')
+            .replace(/^\/webhooks\/(\d+)\/[A-Za-z0-9-_]{64,}/, '/webhooks/$1/:token');
+        if (method === 'delete' &amp;&amp; route.endsWith('/messages/:id')) {
+            route = method + route;
+        }
+        return route;
+    }
+    /**
+     * Time at which this ratelimit bucket resets, according to the Unix timestamp of your machine.
+     * @returns {number}
+     */
+    get reset() {
+        return this._reset - Bucket.timeDiff;
+    }
+    /**
+     * Time at which this ratelimit bucker resets, according to a Discord timestamp.
+     * @param {number} data The timestamp to set
+     */
+    set reset(data) {
+        this._reset = data;
+    }
+    /**
+     * Whether this bucket is currently ratelimited.
+     * @returns {boolean}
+     */
+    get limited() {
+        return (Bucket.global || this.remaining &lt; 1) &amp;&amp; (this.resetDistance > 0);
+    }
+    /**
+     * The time distance until being un-ratelimited, accounting for server time differences.
+     * @returns {number}
+     */
+    get resetDistance() {
+        return this.reset - Date.now();
+    }
+    /**
+     * Clear ratelimits.
+     * @returns {undefined}
+     */
+    clear() {
+        Bucket.global = false;
+        this.remaining = 1;
+    }
+    /**
+     * Queue a request to be sent sequentially in this bucket.
+     * @param {AxiosRequestConfig} config The request config to queue
+     * @returns {Promise&lt;AxiosResponse>}
+     */
+    enqueue(config) {
+        return new Promise((resolve, reject) => {
+            this.queue.push([config, resolve, reject]);
+            this._start();
+        });
+    }
+    /**
+     * Start the queue.
+     * @protected
+     * @returns {Promise&lt;undefined>}
+     */
+    async _start() {
+        if (this._started)
+            return;
+        this._started = true;
+        let entry;
+        while (entry = this.queue.shift()) {
+            let [config, resolve, reject] = entry;
+            // pause while limited
+            while (this.limited)
+                await pause(this.resetDistance);
+            this.clear();
+            // make request
+            try {
+                var res = await axios_1.default.defaults.adapter(config);
+            }
+            catch (e) {
+                reject(e);
+                return;
+            }
+            const date = new Date(res.headers.date).valueOf();
+            // set ratelimiting information
+            Bucket.timeDiff = date - Date.now();
+            Bucket.global = Boolean(res.headers['x-ratelimit-global']);
+            this.limit = Number(res.headers['x-ratelimit-limit'] || Infinity);
+            this.reset = Number(res.headers['x-ratelimit-reset'] || 0) * 1e3;
+            this.remaining = Number(res.headers['x-ratelimit-remaining'] || 1);
+            // retry on some errors
+            if (res.status === 429) {
+                this.reset = date + Number(res.headers['retry-after']) + Bucket.timeDiff;
+                this.queue.push([config, resolve, reject]);
+            }
+            else if (res.status >= 500 &amp;&amp; res.status &lt; 600) {
+                await pause(1e3 + Math.random() - 0.5);
+                this.queue.push([config, resolve, reject]);
+            }
+            else {
+                resolve(res);
+            }
+        }
+        this._started = false;
+    }
+}
+/**
+ * Whether we're globally ratelimited.
+ * @type {boolean}
+ * @default false
+ * @static
+ */
+Bucket.global = false;
+/**
+ * An array of time differences calculated from HTTP requests. Limited to size of 10.
+ * @type {number[]}
+ * @private
+ * @static
+ */
+Bucket._timeDiffs = [];
+exports.default = Bucket;
+
+//# sourceMappingURL=Bucket.js.map
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Feb 10 2018 13:14:19 GMT-0600 (Central Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

@@ -4,5 +4,8 @@
   ],
   "gateway": [
     "master"
+  ],
+  "rest": [
+    "master"
   ]
 }

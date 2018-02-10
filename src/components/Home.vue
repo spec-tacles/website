@@ -109,6 +109,47 @@
             </article>
             <pre class="install-client"><code>npm i @spectacles/gateway</code></pre>
           </div>
+
+          <div class="column is-4">
+            <article class="tile is-child notification is-success library">
+              <div class="content">
+                <p class="title">rest <span class="tag">Node.JS</span></p>
+                <p class="subtitle">The Discord REST client library.</p>
+                <div class="content">
+                  <div class="columns">
+
+                    <div class="column">
+                      <span data-balloon="Maintainer" data-balloon-pos="up">
+                        <span class="icon">
+                          <i class="fa fa-wrench"></i>
+                        </span>
+                        <span>Spectacles</span>
+                      </span>
+                    </div>
+
+                    <div class="column has-text-centered">
+                      <router-link to="/docs/rest" class="client-link">
+                        <span class="icon">
+                          <i class="fa fa-book"></i>
+                        </span>
+                        <span class="text">Docs</span>
+                      </router-link>
+                    </div>
+
+                    <div class="column has-text-right">
+                      <a href="https://github.com/spec-tacles/rest" class="client-link">
+                        <span class="icon">
+                          <i class="fa fa-github"></i>
+                        </span>
+                        <span class="text">Repository</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <pre class="install-client"><code>npm i @spectacles/rest</code></pre>
+          </div>
         </div>
       </div>
     </section>
