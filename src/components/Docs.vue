@@ -65,6 +65,7 @@
 
     <iframe
       id="iframe"
+      height="0"
       frameborder="0"
       scrolling="no"
       @load="resize">
@@ -86,8 +87,17 @@ export default {
 
   methods: {
     resize(obj) {
-      document.getElementById('loading').style.opacity = '0';
+      obj.target.contentWindow.scroll(0, 0);
+      obj.target.style.height = '0px';
       obj.target.style.height = `${obj.target.contentWindow.document.body.scrollHeight}px`;
+      if (obj.target.contentWindow.location.hash.substr(1)) {
+        const el = obj.target.contentWindow.document.getElementById(obj.target.contentWindow.location.hash.substr(1));
+        if (el) {
+          el.scrollIntoView();
+        }
+      }
+      // alert(obj.target.contentWindow.location.hash);
+      document.getElementById('loading').style.opacity = '0';
     },
 
     async handleRoute(route) {
