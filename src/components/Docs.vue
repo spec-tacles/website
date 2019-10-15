@@ -31,12 +31,12 @@
             </div>
           </div>
 
-          <div class="navbar-item has-dropdown is-hoverable">
+          <div class="navbar-item has-dropdown is-hoverable" v-if="libraries[library].versions">
             <div class="navbar-link">
               Version
             </div>
             <div class="navbar-dropdown is-right is-boxed">
-              <router-link v-for="br in libraries[this.$route.params.library]" :key="br" class="navbar-item" :class="{ 'is-active': br === version }" :to="`/docs/${library}/${br}`">
+              <router-link v-for="br in libraries[library].versions" :key="br" class="navbar-item" :class="{ 'is-active': br === version }" :to="`/docs/${library}/${br}`">
                 {{ br }}
               </router-link>
             </div>
@@ -45,7 +45,7 @@
       </div>
     </nav>
 
-    <section class="hero is-fullheight loading" id="loading">
+    <section class="hero is-fullheight loading" ref="loading">
       <div class="hero-body">
         <div class="container">
           <div class="sk-cube-grid">
@@ -63,17 +63,19 @@
       </div>
     </section>
 
-    <iframe id="iframe" frameborder="0" @load="load"></iframe>
+    <iframe ref="docsFrame" frameborder="0" @load="load"></iframe>
   </div>
 </template>
 
 <script>
+import docs from '../../static/docs.json';
+
 export default {
   name: 'docs',
 
   data() {
     return {
-      libraries: {},
+      libraries: docs,
       library: this.$route.params.library,
       version: this.$route.params.version,
     };
@@ -81,30 +83,26 @@ export default {
 
   methods: {
     load() {
-      document.getElementById('loading').style.opacity = '0';
+      this.$refs.loading.style.opacity = '0';
     },
 
     async handleRoute(route) {
-      if (!this.$data.libraries.length) {
-        const res = await fetch(new Request('/static/docs/docs.json'));
-        this.$data.libraries = await res.json();
-      }
-
       const library = route.params.library;
       let version = route.params.version || 'master';
 
-      if (!(library in this.$data.libraries)) {
-        alert('Invalid Library');
+      if (!(library in docs)) {
+        alert('Invalid Library'); // eslint-disable-line no-alert
       }
 
-      if (!(version in this.$data.libraries[library])) {
+      if (!docs[library].versions || !(version in docs[library].versions)) {
         version = 'master';
       }
 
       this.$data.library = library;
       this.$data.version = version;
 
-      document.getElementById('iframe').src = `/static/docs/${library}/${version}/index.html`;
+      const url = docs[library].url.replace('{version}', version);
+      this.$refs.docsFrame.src = url;
     },
   },
 
@@ -114,7 +112,7 @@ export default {
     },
   },
 
-  async created() {
+  async mounted() {
     this.handleRoute(this.$route);
   },
 };

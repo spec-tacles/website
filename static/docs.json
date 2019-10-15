@@ -1,0 +1,14 @@
+{
+  "util.js": {
+    "url": "https://spec-tacles.github.io/util.js/{version}",
+    "versions": [
+      "master"
+    ]
+  },
+  "gateway": {
+    "url": "https://godoc.org/github.com/spec-tacles/gateway"
+  },
+  "go": {
+    "url": "https://godoc.org/github.com/spec-tacles/go"
+  }
+}
