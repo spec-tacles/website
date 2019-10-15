@@ -1,0 +1,24 @@
+{
+  "util.js": {
+    "docs": "https://spec-tacles.github.io/util.js/{version}",
+    "versions": [
+      "master"
+    ],
+    "description": "A collection of Discord and Spectacles utilities.",
+    "language": "Node.JS",
+    "installation": "npm i @spectacles/util"
+  },
+  "gateway": {
+    "docs": "https://godoc.org/github.com/spec-tacles/gateway",
+    "description": "The gateway service for Spectacles applications.",
+    "installation": "docker pull spectacles/gateway",
+    "language": "Go"
+  },
+  "brokers.go": {
+    "repo": "https://github.com/spec-tacles/go",
+    "docs": "https://godoc.org/github.com/spec-tacles/go/broker",
+    "description": "Broker libraries for Go applications.",
+    "language": "Go",
+    "installation": "go get github.com/spec-tacles/go/brokers"
+  }
+}

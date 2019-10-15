@@ -68,14 +68,14 @@
 </template>
 
 <script>
-import docs from '../../static/docs.json';
+import libraries from '../../static/libraries.json';
 
 export default {
   name: 'docs',
 
   data() {
     return {
-      libraries: docs,
+      libraries,
       library: this.$route.params.library,
       version: this.$route.params.version,
     };
@@ -90,18 +90,19 @@ export default {
       const library = route.params.library;
       let version = route.params.version || 'master';
 
-      if (!(library in docs)) {
+      if (!(library in libraries)) {
         alert('Invalid Library'); // eslint-disable-line no-alert
       }
 
-      if (!docs[library].versions || !(version in docs[library].versions)) {
+      const lib = libraries[library];
+      if (!lib.versions || !(version in lib.versions)) {
         version = 'master';
       }
 
       this.$data.library = library;
       this.$data.version = version;
 
-      const url = docs[library].url.replace('{version}', version);
+      const url = lib.docs.replace('{version}', version);
       this.$refs.docsFrame.src = url;
     },
   },
