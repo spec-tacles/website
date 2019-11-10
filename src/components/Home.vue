@@ -8,7 +8,7 @@
             Spectacles
           </h1>
           <h2 class="subtitle main">
-            Some cool sounding line
+            Discord bots at scale
           </h2>
         </div>
       </div>
@@ -17,9 +17,10 @@
     <section class="section">
       <div class="container">
         <h1 class="title">What is Spectacles?</h1>
-        <p>
-          a meme
+        <p class="content">
+          Spectacles is a collection of applications and libraries designed to help you make stable, microservice-oriented Discord bots.
         </p>
+        <img class="image" src="../assets/architecture.svg" alt="Architecture diagram" />
       </div>
     </section>
 
@@ -66,13 +67,15 @@
     <footer class="footer">
       <div class="container">
         <div class="content has-text-centered">
-          <p>Coming Never</p>
           <p>
             <strong>Spectacles</strong> by <a href="https://github.com/appellation">appelation</a> and <a href="https://github.com/Hackzzila">Hackzzila</a>.
           </p>
           <p>
-            <a class="icon" href="https://github.com/spec-tacles">
-              <i class="fa fa-github"></i>
+            <a class="icon is-large" href="https://github.com/spec-tacles">
+              <i class="fab fa-github fa-2x"></i>
+            </a>
+            <a class="icon" href="https://discord.gg/myGTdw">
+              <i class="fab fa-discord fa-2x"></i>
             </a>
           </p>
         </div>
