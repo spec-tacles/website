@@ -24,7 +24,7 @@
             <div class="column">
               <a :href="repo || `https://github.com/spec-tacles/${name}`" class="client-link">
                 <span class="icon">
-                  <i class="fa fa-github"></i>
+                  <i class="fab fa-github"></i>
                 </span>
                 <span class="text">Repository</span>
               </a>
