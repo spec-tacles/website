@@ -25,50 +25,41 @@
 
     <section class="section">
       <div class="container">
+        <h1 class="title">Applications</h1>
+        <section class="columns" v-for="(app, name) in applications" :key="name">
+          <module-card
+            class="column is-one-third"
+            :name="name"
+            :description="app.description"
+            :installation="app.installation"
+            :repo="app.repo"
+            :color="app.color"
+            :inverted="app.inverted"
+          />
+        </section>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
         <h1 class="title">Libraries</h1>
 
-        <div class="columns">
-          <div class="column is-4" v-for="(lib, name) in libraries" :key="name">
-            <article class="tile is-child notification is-success library">
-              <div class="content">
-                <p class="title">{{ name }} <span class="tag">{{ lib.language }}</span></p>
-                <p class="subtitle">{{ lib.description }}</p>
-                <div class="content">
-                  <div class="columns">
-
-                    <div class="column">
-                      <span data-balloon="Maintainer" data-balloon-pos="up">
-                        <span class="icon">
-                          <i class="fa fa-wrench"></i>
-                        </span>
-                        <span>Spectacles</span>
-                      </span>
-                    </div>
-
-                    <div class="column has-text-centered">
-                      <router-link :to="`/docs/${name}`" class="client-link">
-                        <span class="icon">
-                          <i class="fa fa-book"></i>
-                        </span>
-                        <span class="text">Docs</span>
-                      </router-link>
-                    </div>
-
-                    <div class="column has-text-right">
-                      <a :href="lib.repo || `https://github.com/spec-tacles/${name}`" class="client-link">
-                        <span class="icon">
-                          <i class="fa fa-github"></i>
-                        </span>
-                        <span class="text">Repository</span>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </article>
-            <pre class="install-client"><code>{{ lib.installation }}</code></pre>
+        <section v-for="(language, name) in libraries" :key="name">
+          <h2 class="title is-4" style="margin-bottom: 0.25em">{{ name }}</h2>
+          <div class="columns" style="margin-bottom: 1em">
+            <module-card
+              class="column is-one-third"
+              v-for="lib in language.libraries"
+              :key="lib.name"
+              :name="lib.name"
+              :description="lib.description"
+              :installation="lib.installation"
+              :repo="lib.repo"
+              :color="language.color"
+              :inverted="language.inverted"
+            />
           </div>
-        </div>
+        </section>
       </div>
     </section>
 
@@ -91,13 +82,16 @@
 </template>
 
 <script>
+import applications from '../../static/applications.json';
 import libraries from '../../static/libraries.json';
+import ModuleCard from './ModuleCard';
 
 export default {
   name: 'Home',
   data() {
-    return { libraries };
+    return { libraries, applications };
   },
+  components: { ModuleCard },
 };
 </script>
 

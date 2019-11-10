@@ -1,0 +1,9 @@
+{
+	"gateway": {
+    "docs": "https://github.com/spec-tacles/gateway#readme",
+    "description": "The gateway service for Spectacles applications.",
+    "installation": "docker pull spectacles/gateway",
+    "color": "#00acd7",
+    "inverted": true
+  }
+}
