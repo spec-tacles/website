@@ -36,6 +36,7 @@
             :repo="app.repo"
             :color="app.color"
             :inverted="app.inverted"
+            :docs="app.repo"
           />
         </section>
       </div>
@@ -45,19 +46,20 @@
       <div class="container">
         <h1 class="title">Libraries</h1>
 
-        <section v-for="(language, name) in libraries" :key="name">
-          <h2 class="title is-4" style="margin-bottom: 0.25em">{{ name }}</h2>
+        <section v-for="(language, langName) in libraries" :key="langName">
+          <h2 class="title is-4" style="margin-bottom: 0.25em">{{ language.name }}</h2>
           <div class="columns" style="margin-bottom: 1em">
             <module-card
               class="column is-one-third"
-              v-for="lib in language.libraries"
-              :key="lib.name"
-              :name="lib.name"
+              v-for="(lib, libName) in language.libraries"
+              :key="libName"
+              :name="libName"
               :description="lib.description"
               :installation="lib.installation"
               :repo="lib.repo"
               :color="language.color"
               :inverted="language.inverted"
+              :docs="`/docs/${langName}/${libName}`"
             />
           </div>
         </section>

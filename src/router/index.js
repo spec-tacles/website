@@ -13,7 +13,7 @@ export default new Router({
       component: Home,
     },
     {
-      path: '/docs/:library',
+      path: '/docs/:language/:library',
       name: 'docs',
       component: Docs,
       children: [{

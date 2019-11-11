@@ -1,9 +1,9 @@
 {
-  "JavaScript": {
+  "js": {
+    "name": "JavaScript",
     "color": "#f7e018",
-    "libraries": [
-      {
-        "name": "util.js",
+    "libraries": {
+      "util": {
         "docs": "https://spec-tacles.github.io/util.js/{version}",
         "versions": [
           "master"
@@ -12,8 +12,7 @@
         "language": "Node.JS",
         "installation": "npm i @spectacles/util"
       },
-      {
-        "name": "rest.js",
+      "rest": {
         "docs": "https://spec-tacles.github.io/rest.js/{version}",
         "versions": [
           "master"
@@ -22,20 +21,20 @@
         "language": "Node.JS",
         "installation": "npm i @spectacles/rest"
       }
-    ]
+    }
   },
-  "Go": {
+  "go": {
+    "name": "Go",
     "color": "#00acd7",
     "inverted": true,
-    "libraries": [
-      {
-        "name": "Brokers",
+    "libraries": {
+      "brokers": {
         "repo": "https://github.com/spec-tacles/go",
         "docs": "https://godoc.org/github.com/spec-tacles/go/broker",
         "description": "Broker libraries for Go applications.",
         "language": "Go",
         "installation": "go get github.com/spec-tacles/go/brokers"
       }
-    ]
+    }
   }
 }

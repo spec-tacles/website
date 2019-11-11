@@ -75,7 +75,7 @@ export default {
 
   data() {
     return {
-      libraries,
+      libraries: libraries[this.$route.params.language].libraries,
       library: this.$route.params.library,
       version: this.$route.params.version,
     };
@@ -87,18 +87,29 @@ export default {
     },
 
     async handleRoute(route) {
-      const library = route.params.library;
-      let version = route.params.version || 'master';
+      if (!this.$refs.docsFrame) return;
 
-      if (!(library in libraries)) {
+      const {
+        language,
+        library,
+      } = route.params;
+      let { version } = route.params;
+
+      if (!(language in libraries)) {
+        alert('Invalid Language'); // eslint-disable-line no-alert
+      }
+
+      const lang = libraries[language];
+      if (!(library in lang.libraries)) {
         alert('Invalid Library'); // eslint-disable-line no-alert
       }
 
-      const lib = libraries[library];
-      if (!lib.versions || !(version in lib.versions)) {
+      const lib = lang.libraries[library];
+      if (!lib.versions || !lib.versions.includes(version)) {
         version = 'master';
       }
 
+      this.$data.libraries = lang.libraries;
       this.$data.library = library;
       this.$data.version = version;
 

@@ -13,7 +13,13 @@
         <div class="content">
           <div class="columns">
             <div class="column">
-              <router-link :to="`/docs/${name}`" class="client-link">
+              <a :href="docs" v-if="docs.startsWith('http')" class="client-link">
+                <span class="icon">
+                  <i class="fa fa-book"></i>
+                </span>
+                <span class="text">Docs</span>
+              </a>
+              <router-link :to="docs" v-else class="client-link">
                 <span class="icon">
                   <i class="fa fa-book"></i>
                 </span>
@@ -46,6 +52,7 @@ export default {
     'repo',
     'color',
     'inverted',
+    'docs',
   ],
 };
 </script>
