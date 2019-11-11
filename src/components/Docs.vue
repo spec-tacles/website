@@ -25,7 +25,7 @@
               Library
             </div>
             <div class="navbar-dropdown is-right is-boxed">
-              <router-link v-for="(value, lb) in libraries" :key="lb" class="navbar-item" :class="{ 'is-active': lb === library }" :to="`/docs/${lb}`">
+              <router-link v-for="(value, lb) in libraries" :key="lb" class="navbar-item" :class="{ 'is-active': lb === library }" :to="`/docs/${$route.params.language}/${lb}`">
                 {{ lb }}
               </router-link>
             </div>
