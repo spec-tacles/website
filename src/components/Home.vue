@@ -12,6 +12,11 @@
           </h2>
         </div>
       </div>
+      <div class="hero-foot has-text-centered">
+        <span class="icon is-large">
+          <i class="fas fa-chevron-down fa-2x"></i>
+        </span>
+      </div>
     </section>
 
     <section class="section">
