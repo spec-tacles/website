@@ -81,7 +81,7 @@
             <a class="icon is-large" href="https://github.com/spec-tacles">
               <i class="fab fa-github fa-2x"></i>
             </a>
-            <a class="icon" href="https://discord.gg/myGTdw">
+            <a class="icon" href="https://discord.gg/zU3vha6">
               <i class="fab fa-discord fa-2x"></i>
             </a>
           </p>
