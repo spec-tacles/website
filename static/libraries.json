@@ -31,6 +31,18 @@
         "docs": "https://godoc.org/github.com/spec-tacles/go/broker",
         "description": "Broker libraries for Go applications.",
         "installation": "go get github.com/spec-tacles/go/brokers"
+      },
+      "rest": {
+        "repo": "https://github.com/spec-tacles/go",
+        "docs": "https://godoc.org/github.com/spec-tacles/go/rest",
+        "description": "A basic Discord REST library for Go applications.",
+        "installation": "go get github.com/spec-tacles/go/rest"
+      },
+      "types": {
+        "repo": "https://github.com/spec-tacles/go",
+        "docs": "https://godoc.org/github.com/spec-tacles/go/types",
+        "description": "Go types for Discord data structures.",
+        "installation": "go get github.com/spec-tacles/go/types"
       }
     }
   },
