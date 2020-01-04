@@ -33,5 +33,52 @@
         "installation": "go get github.com/spec-tacles/go/brokers"
       }
     }
+  },
+  "csharp": {
+    "name": "C#",
+    "color": "#178600",
+    "inverted": true,
+    "libraries": {
+      "gateway": {
+        "repo": "https://github.com/spec-tacles/Spectacles.NET",
+        "versions": [
+          "master",
+          "stable"
+        ],
+        "docs": "https://spec-tacles.github.io/Spectacles.NET/{versions}/api/Spectacles.NET.Gateway",
+        "description": "Gateway library for .Net applications.",
+        "installation": "Install-Package Spectacles.NET.Gateway"
+      },
+      "broker": {
+        "repo": "https://github.com/spec-tacles/Spectacles.NET",
+        "versions": [
+          "master",
+          "stable"
+        ],
+        "docs": "https://spec-tacles.github.io/Spectacles.NET/{version}/api/Spectacles.NET.Broker",
+        "description": "Broker library for .Net applications.",
+        "installation": "Install-Package Spectacles.NET.Broker"
+      },
+      "rest": {
+        "repo": "https://github.com/spec-tacles/Spectacles.NET",
+        "versions": [
+          "master",
+          "stable"
+        ],
+        "docs": "https://spec-tacles.github.io/Spectacles.NET/{version}/api/Spectacles.NET.Rest",
+        "description": "A Discord REST client with support for distributed ratelimiting.",
+        "installation": "Install-Package Spectacles.NET.Rest"
+      },
+      "types": {
+        "repo": "https://github.com/spec-tacles/Spectacles.NET",
+        "versions": [
+          "master",
+          "stable"
+        ],
+        "docs": "https://spec-tacles.github.io/Spectacles.NET/{version}/api/Spectacles.NET.Types",
+        "description": "Discord API .NET Typings.",
+        "installation": "Install-Package Spectacles.NET.Types"
+      }
+    }
   }
 }
