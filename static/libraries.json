@@ -45,7 +45,7 @@
           "master",
           "stable"
         ],
-        "docs": "https://spec-tacles.github.io/Spectacles.NET/{versions}/api/Spectacles.NET.Gateway",
+        "docs": "https://spec-tacles.github.io/Spectacles.NET/{version}/api/Spectacles.NET.Gateway",
         "description": "Gateway library for .NET applications.",
         "installation": "Install-Package Spectacles.NET.Gateway"
       },
