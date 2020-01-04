@@ -32,7 +32,7 @@
     <section class="section">
       <div class="container">
         <h1 class="title">Applications</h1>
-        <section class="columns" v-for="(app, name) in applications" :key="name">
+        <section class="columns is-multiline" v-for="(app, name) in applications" :key="name">
           <module-card
             class="column is-one-third"
             :name="name"
@@ -53,7 +53,7 @@
 
         <section v-for="(language, langName) in libraries" :key="langName">
           <h2 class="title is-4" style="margin-bottom: 0.25em">{{ language.name }}</h2>
-          <div class="columns" style="margin-bottom: 1em">
+          <div class="columns is-multiline" style="margin-bottom: 1em">
             <module-card
               class="column is-one-third"
               v-for="(lib, libName) in language.libraries"
