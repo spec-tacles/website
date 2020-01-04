@@ -34,8 +34,8 @@
       }
     }
   },
-  ".NET": {
-    "name": "C#",
+  ".net": {
+    "name": ".NET",
     "color": "#178600",
     "inverted": true,
     "libraries": {
