@@ -36,7 +36,7 @@
               Version
             </div>
             <div class="navbar-dropdown is-right is-boxed">
-              <router-link v-for="br in libraries[library].versions" :key="br" class="navbar-item" :class="{ 'is-active': br === version }" :to="`/docs/${library}/${br}`">
+              <router-link v-for="br in libraries[library].versions" :key="br" class="navbar-item" :class="{ 'is-active': br === version }" :to="`/docs/${$route.params.language}/${library}/${br}`">
                 {{ br }}
               </router-link>
             </div>
