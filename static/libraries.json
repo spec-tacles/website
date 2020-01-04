@@ -34,8 +34,8 @@
       }
     }
   },
-  "csharp": {
-    "name": "C#",
+  ".net": {
+    "name": ".NET",
     "color": "#178600",
     "inverted": true,
     "libraries": {
@@ -46,7 +46,7 @@
           "stable"
         ],
         "docs": "https://spec-tacles.github.io/Spectacles.NET/{versions}/api/Spectacles.NET.Gateway",
-        "description": "Gateway library for .Net applications.",
+        "description": "Gateway library for .NET applications.",
         "installation": "Install-Package Spectacles.NET.Gateway"
       },
       "broker": {
@@ -56,7 +56,7 @@
           "stable"
         ],
         "docs": "https://spec-tacles.github.io/Spectacles.NET/{version}/api/Spectacles.NET.Broker",
-        "description": "Broker library for .Net applications.",
+        "description": "Broker library for .NET applications.",
         "installation": "Install-Package Spectacles.NET.Broker"
       },
       "rest": {
