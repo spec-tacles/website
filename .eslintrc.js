@@ -1,27 +1,18 @@
-// https://eslint.org/docs/user-guide/configuring
+const path = require('path');
 
 module.exports = {
   root: true,
-  parserOptions: {
-    parser: 'babel-eslint'
-  },
   env: {
     browser: true,
   },
-  // https://github.com/vuejs/eslint-plugin-vue#priority-a-essential-error-prevention
-  // consider switching to `plugin:vue/strongly-recommended` or `plugin:vue/recommended` for stricter rules.
-  extends: ['plugin:vue/essential', 'airbnb-base'],
-  // required to lint *.vue files
-  plugins: [
-    'vue'
-  ],
-  // check if imports actually resolve
+  extends: ['plugin:vue/recommended', 'airbnb-base'],
+  plugins: ['vue'],
   settings: {
     'import/resolver': {
       webpack: {
-        config: 'build/webpack.base.conf.js'
-      }
-    }
+        config: path.resolve(__dirname, 'node_modules', '@vue', 'cli-service', 'webpack.config.js'),
+      },
+    },
   },
   // add your custom rules here
   rules: {

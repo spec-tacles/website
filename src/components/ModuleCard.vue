@@ -1,58 +1,74 @@
 <template>
-  <div>
-    <article :class="{
-      tile: true,
-      'is-child': true,
-      notification: true,
-      library: true,
-      'has-text-white': inverted,
-    }" :style="color ? `background-color: ${color}` : ''">
-      <div class="content">
-        <p class="title">{{ name }}</p>
-        <p class="subtitle">{{ description }}</p>
-        <div class="content">
-          <div class="columns">
-            <div class="column">
-              <a :href="docs" v-if="docs.startsWith('http')" class="client-link">
-                <span class="icon">
-                  <i class="fa fa-book"></i>
-                </span>
-                <span class="text">Docs</span>
-              </a>
-              <router-link :to="docs" v-else class="client-link">
-                <span class="icon">
-                  <i class="fa fa-book"></i>
-                </span>
-                <span class="text">Docs</span>
-              </router-link>
-            </div>
+  <div class="pr-2 pb-2">
+    <article
+      :class="['p-4', 'rounded-t', inverted ? 'text-white' : '']"
+      :style="color ? `background-color: ${color}` : ''">
+      <div>
+        <heading :l="2">{{ name }}</heading>
+        <paragraph>{{ description }}</paragraph>
+        <div class="flex">
+          <dynamic-link
+            :href="docs"
+            class="flex-grow">
+            <i class="fa fa-book" />
+            <span class="ml-3">Docs</span>
+          </dynamic-link>
 
-            <div class="column">
-              <a :href="repo || `https://github.com/spec-tacles/${name}`" class="client-link">
-                <span class="icon">
-                  <i class="fab fa-github"></i>
-                </span>
-                <span class="text">Repository</span>
-              </a>
-            </div>
-          </div>
+          <dynamic-link
+            :href="repo || `https://github.com/spec-tacles/${name}`"
+            class="flex-grow">
+            <span class="icon">
+              <i class="fab fa-github" />
+            </span>
+            <span class="ml-3">Repository</span>
+          </dynamic-link>
         </div>
       </div>
     </article>
-    <pre class="install-client"><code>{{ installation }}</code></pre>
+    <pre class="rounded-b bg-gray-800 p-4 text-white"><code>{{ installation }}</code></pre>
   </div>
 </template>
 
 <script>
+import Heading from './utils/Heading';
+import DynamicLink from './utils/Link';
+import Paragraph from './utils/Paragraph';
+
 export default {
-  props: [
-    'name',
-    'description',
-    'installation',
-    'repo',
-    'color',
-    'inverted',
-    'docs',
-  ],
+  components: {
+    Heading,
+    DynamicLink,
+    Paragraph,
+  },
+  props: {
+    name: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    installation: {
+      type: String,
+      required: true,
+    },
+    repo: {
+      type: String,
+      required: true,
+    },
+    color: {
+      type: String,
+      required: true,
+    },
+    inverted: {
+      type: Boolean,
+      default: false,
+    },
+    docs: {
+      type: String,
+      required: true,
+    },
+  },
 };
 </script>

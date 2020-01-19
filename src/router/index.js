@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Home from '@/components/Home';
-import Docs from '@/components/Docs';
+import Home from '@/pages/Home';
+import Docs from '@/pages/Docs';
 
 Vue.use(Router);
 
@@ -26,4 +26,8 @@ export default new Router({
       }],
     },
   ],
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition;
+    return null;
+  },
 });

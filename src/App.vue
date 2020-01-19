@@ -11,7 +11,9 @@ export default {
 </script>
 
 <style lang="sass">
-@import '../node_modules/bulma/bulma.sass'
+@tailwind base
+@tailwind components
+@tailwind utilities
 
 html
   overflow: auto !important

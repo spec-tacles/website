@@ -2,19 +2,31 @@
   <div class="docs">
     <nav class="navbar is-dark">
       <div class="navbar-brand">
-        <router-link class="navbar-item" to="/">
-          <img src="../assets/white-nopadding.svg" alt="Spectacles" width="56" height="28">
+        <router-link
+          class="navbar-item"
+          to="/">
+          <img
+            src="../assets/white-nopadding.svg"
+            alt="Spectacles"
+            width="56"
+            height="28">
         </router-link>
-        <div class="navbar-burger burger" data-target="navbarExampleTransparentExample">
-          <span></span>
-          <span></span>
-          <span></span>
+        <div
+          class="navbar-burger burger"
+          data-target="navbarExampleTransparentExample">
+          <span />
+          <span />
+          <span />
         </div>
       </div>
 
-      <div id="navbarExampleTransparentExample" class="navbar-menu">
+      <div
+        id="navbarExampleTransparentExample"
+        class="navbar-menu">
         <div class="navbar-start">
-          <router-link class="navbar-item" to="/">
+          <router-link
+            class="navbar-item"
+            to="/">
             Home
           </router-link>
         </div>
@@ -25,18 +37,30 @@
               Library
             </div>
             <div class="navbar-dropdown is-right is-boxed">
-              <router-link v-for="(value, lb) in libraries" :key="lb" class="navbar-item" :class="{ 'is-active': lb === library }" :to="`/docs/${$route.params.language}/${lb}`">
+              <router-link
+                v-for="(value, lb) in libraries"
+                :key="lb"
+                :class="{ 'is-active': lb === library }"
+                :to="`/docs/${$route.params.language}/${lb}`"
+                class="navbar-item">
                 {{ lb }}
               </router-link>
             </div>
           </div>
 
-          <div class="navbar-item has-dropdown is-hoverable" v-if="libraries[library].versions">
+          <div
+            v-if="libraries[library].versions"
+            class="navbar-item has-dropdown is-hoverable">
             <div class="navbar-link">
               Version
             </div>
             <div class="navbar-dropdown is-right is-boxed">
-              <router-link v-for="br in libraries[library].versions" :key="br" class="navbar-item" :class="{ 'is-active': br === version }" :to="`/docs/${$route.params.language}/${library}/${br}`">
+              <router-link
+                v-for="br in libraries[library].versions"
+                :key="br"
+                :class="{ 'is-active': br === version }"
+                :to="`/docs/${$route.params.language}/${library}/${br}`"
+                class="navbar-item">
                 {{ br }}
               </router-link>
             </div>
@@ -45,25 +69,30 @@
       </div>
     </nav>
 
-    <section class="hero is-fullheight loading" ref="loading">
+    <section
+      ref="loading"
+      class="hero is-fullheight loading">
       <div class="hero-body">
         <div class="container">
           <div class="sk-cube-grid">
-            <div class="sk-cube sk-cube1"></div>
-            <div class="sk-cube sk-cube2"></div>
-            <div class="sk-cube sk-cube3"></div>
-            <div class="sk-cube sk-cube4"></div>
-            <div class="sk-cube sk-cube5"></div>
-            <div class="sk-cube sk-cube6"></div>
-            <div class="sk-cube sk-cube7"></div>
-            <div class="sk-cube sk-cube8"></div>
-            <div class="sk-cube sk-cube9"></div>
+            <div class="sk-cube sk-cube1" />
+            <div class="sk-cube sk-cube2" />
+            <div class="sk-cube sk-cube3" />
+            <div class="sk-cube sk-cube4" />
+            <div class="sk-cube sk-cube5" />
+            <div class="sk-cube sk-cube6" />
+            <div class="sk-cube sk-cube7" />
+            <div class="sk-cube sk-cube8" />
+            <div class="sk-cube sk-cube9" />
           </div>
         </div>
       </div>
     </section>
 
-    <iframe ref="docsFrame" frameborder="0" @load="load"></iframe>
+    <iframe
+      ref="docsFrame"
+      frameborder="0"
+      @load="load" />
   </div>
 </template>
 
@@ -71,7 +100,7 @@
 import libraries from '../../static/libraries.json';
 
 export default {
-  name: 'docs',
+  name: 'Docs',
 
   data() {
     return {
@@ -79,6 +108,16 @@ export default {
       library: this.$route.params.library,
       version: this.$route.params.version,
     };
+  },
+
+  watch: {
+    $route(to) {
+      this.handleRoute(to);
+    },
+  },
+
+  async mounted() {
+    this.handleRoute(this.$route);
   },
 
   methods: {
@@ -116,16 +155,6 @@ export default {
       const url = lib.docs.replace('{version}', version);
       this.$refs.docsFrame.src = url;
     },
-  },
-
-  watch: {
-    $route(to) {
-      this.handleRoute(to);
-    },
-  },
-
-  async mounted() {
-    this.handleRoute(this.$route);
   },
 };
 </script>
