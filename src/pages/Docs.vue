@@ -1,9 +1,8 @@
 <template>
   <div class="docs">
-    <nav class="navbar is-dark">
-      <div class="navbar-brand">
+    <nav class="bg-gray-800 text-white flex">
+      <div class="flex-grow p-4">
         <router-link
-          class="navbar-item"
           to="/">
           <img
             src="../assets/white-nopadding.svg"
@@ -11,61 +10,25 @@
             width="56"
             height="28">
         </router-link>
-        <div
-          class="navbar-burger burger"
-          data-target="navbarExampleTransparentExample">
-          <span />
-          <span />
-          <span />
-        </div>
       </div>
 
-      <div
-        id="navbarExampleTransparentExample"
-        class="navbar-menu">
-        <div class="navbar-start">
-          <router-link
-            class="navbar-item"
-            to="/">
-            Home
-          </router-link>
-        </div>
+      <div class="w-40 p-4">
+        <multiselect
+          :value="libraryName"
+          :options="Object.keys(libraries)"
+          :searchable="false"
+          :show-labels="false"
+          @input="onLibrarySelected" />
+      </div>
 
-        <div class="navbar-end">
-          <div class="navbar-item has-dropdown is-hoverable">
-            <div class="navbar-link">
-              Library
-            </div>
-            <div class="navbar-dropdown is-right is-boxed">
-              <router-link
-                v-for="(value, lb) in libraries"
-                :key="lb"
-                :class="{ 'is-active': lb === library }"
-                :to="`/docs/${$route.params.language}/${lb}`"
-                class="navbar-item">
-                {{ lb }}
-              </router-link>
-            </div>
-          </div>
-
-          <div
-            v-if="libraries[library].versions"
-            class="navbar-item has-dropdown is-hoverable">
-            <div class="navbar-link">
-              Version
-            </div>
-            <div class="navbar-dropdown is-right is-boxed">
-              <router-link
-                v-for="br in libraries[library].versions"
-                :key="br"
-                :class="{ 'is-active': br === version }"
-                :to="`/docs/${$route.params.language}/${library}/${br}`"
-                class="navbar-item">
-                {{ br }}
-              </router-link>
-            </div>
-          </div>
-        </div>
+      <div class="w-40 p-4">
+        <multiselect
+          v-if="library.versions"
+          :value="version"
+          :options="library.versions"
+          :searchable="false"
+          :show-labels="false"
+          @input="onVersionSelected" />
       </div>
     </nav>
 
@@ -91,33 +54,53 @@
 
     <iframe
       ref="docsFrame"
+      class="h-full w-full"
       frameborder="0"
       @load="load" />
   </div>
 </template>
 
 <script>
+import vSelect from 'vue-select';
+import Multiselect from 'vue-multiselect';
 import libraries from '../../static/libraries.json';
 
 export default {
   name: 'Docs',
 
-  data() {
-    return {
-      libraries: libraries[this.$route.params.language].libraries,
-      library: this.$route.params.library,
-      version: this.$route.params.version,
-    };
+  components: {
+    Multiselect,
+    vSelect,
+  },
+
+  computed: {
+    libraries() {
+      return this.language.libraries;
+    },
+    language() {
+      if (!(this.$route.params.language in libraries)) throw new Error('invalid language');
+      return libraries[this.$route.params.language];
+    },
+    libraryName() {
+      return this.$route.params.library;
+    },
+    library() {
+      if (!(this.libraryName in this.libraries)) throw new Error('invalid library');
+      return this.libraries[this.libraryName];
+    },
+    version() {
+      return this.$route.params.version;
+    },
   },
 
   watch: {
-    $route(to) {
-      this.handleRoute(to);
+    $route() {
+      this.handleRoute();
     },
   },
 
   async mounted() {
-    this.handleRoute(this.$route);
+    this.handleRoute();
   },
 
   methods: {
@@ -125,72 +108,66 @@ export default {
       this.$refs.loading.style.opacity = '0';
     },
 
-    async handleRoute(route) {
+    onLibrarySelected(value) {
+      this.$router.push({ name: 'docs', params: { language: this.$route.params.language, library: value } });
+    },
+
+    onVersionSelected(value) {
+      this.$router.push({ name: 'docs-version', params: { version: value } });
+    },
+
+    async handleRoute() {
       if (!this.$refs.docsFrame) return;
 
-      const {
-        language,
-        library,
-      } = route.params;
-      let { version } = route.params;
-
-      if (!(language in libraries)) {
-        alert('Invalid Language'); // eslint-disable-line no-alert
+      if (!this.version) {
+        this.$router.push({ name: 'docs-version', params: { version: 'master' } });
+        return;
       }
 
-      const lang = libraries[language];
-      if (!(library in lang.libraries)) {
-        alert('Invalid Library'); // eslint-disable-line no-alert
+      let lib;
+      try {
+        lib = this.library;
+      } catch (e) {
+        alert(e.message);
+        return;
       }
 
-      const lib = lang.libraries[library];
-      if (!lib.versions || !lib.versions.includes(version)) {
-        version = 'master';
-      }
-
-      this.$data.libraries = lang.libraries;
-      this.$data.library = library;
-      this.$data.version = version;
-
-      const url = lib.docs.replace('{version}', version);
+      const url = lib.docs.replace('{version}', this.version);
       this.$refs.docsFrame.src = url;
     },
   },
 };
 </script>
 
+<style lang="scss">
+@import '../../node_modules/vue-multiselect/dist/vue-multiselect.min.css';
+</style>
 
-<style lang="sass" scoped>
-@import '../../node_modules/bulma/bulma.sass'
+<style lang="scss" scoped>
+.docs {
+  height: 100vh;
+}
 
-.docs
-  height: 100vh
+nav {
+  z-index: 10;
+}
 
-iframe
-  width: 100%
-  position: absolute
-  top: $navbar-height
-  bottom: 0
-  left: 0
-  right: 0
-  height: calc(100vh - #{$navbar-height})
+.loading {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: white;
+  transition: all 500ms linear;
 
-nav
-  z-index: 10
+  .hero-body {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
 
-.loading
-  pointer-events: none
-  position: absolute
-  top: 0
-  left: 0
-  right: 0
-  bottom: 0
-  background: white
-  transition: all 500ms linear
-
-  .hero-body
-    padding-top: 0
-    padding-bottom: 0
 </style>
 
 <style scoped>

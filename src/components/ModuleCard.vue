@@ -55,7 +55,7 @@ export default {
     },
     repo: {
       type: String,
-      required: true,
+      default: '',
     },
     color: {
       type: String,
