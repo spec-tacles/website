@@ -32,9 +32,10 @@
     <section class="section">
       <div class="container">
         <h1 class="title">Applications</h1>
-        <section class="columns is-multiline" v-for="(app, name) in applications" :key="name">
+        <section class="columns is-multiline">
           <module-card
             class="column is-one-third"
+            v-for="(app, name) in applications" :key="name"
             :name="name"
             :description="app.description"
             :installation="app.installation"
