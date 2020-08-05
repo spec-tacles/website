@@ -5,5 +5,12 @@
     "installation": "docker pull spectacles/gateway",
     "color": "#00acd7",
     "inverted": true
+  },
+  "proxy": {
+    "repo": "https://github.com/spec-tacles/proxy",
+    "description": "The data proxy to handle REST ratelimits and caching.",
+    "installation": "docker pull spectacles/proxy",
+    "color": "#dea584",
+    "inverted": true
   }
 }
