@@ -8,7 +8,7 @@ import styles from './styles.module.css';
 
 const features = [
   {
-    title: <>Scalability</>,
+    title: <>Scale larger</>,
     imageUrl: 'img/stonks.jpg',
     description: (
       <>
@@ -18,21 +18,22 @@ const features = [
     ),
   },
   {
-    title: <>Reliability</>,
-    imageUrl: 'img/undraw_docusaurus_tree.svg',
+    title: <>Build bigger</>,
+    imageUrl: 'img/stonks.jpg',
     description: (
       <>
-        Spectacles
+        Spectacles is engineered around microservices, enabling you to build
+        bigger and more complex applications around your Discord bot.
       </>
     ),
   },
   {
-    title: <>Powered by AMQP</>,
-    imageUrl: 'img/undraw_docusaurus_react.svg',
+    title: <>Serve reliably</>,
+    imageUrl: 'img/stonks.jpg',
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Spectacles is designed to recover gracefully, allowing you to focus on
+        building your application rather than keeping it alive.
       </>
     ),
   },
