@@ -59,9 +59,7 @@ function Home() {
   const logoUrl = useBaseUrl('img/white-padding.svg');
   const {siteConfig = {}} = context;
   return (
-    <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
+    <Layout>
       <header className={clsx('hero hero--primary', styles.heroBanner)}>
         <div className="container">
           <img src={logoUrl} alt="Spectacles" />
