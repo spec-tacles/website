@@ -3,7 +3,7 @@ module.exports = {
     {
       type: 'category',
       label: 'Getting started',
-      items: ['introduction', 'gateway']
+      items: ['introduction', 'gateway', 'proxy']
     },
     {
       type: 'category',
