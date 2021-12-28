@@ -4,8 +4,7 @@ id: introduction
 title: Introduction
 ---
 
-Spectacles is a collection of applications and libraries designed to help you make stable,
-microservice-oriented Discord bots.
+Spectacles is a distributed Discord bot framework.
 
 ![Architecture](../static/img/architecture.svg)
 
@@ -13,12 +12,11 @@ A basic Spectacles bot runs 4 services:
 
 1. Gateway
 2. Proxy
-3. RabbitMQ
+3. Message broker
 4. Command handler
 
-The Spectacles organization provides the gateway and proxy services. RabbitMQ is developed
-independently. You are responsible for writing your own command handler (that's why you're here,
-afterall).
+The Spectacles organization provides the gateway and proxy services. You are responsible for
+writing your own command handler (that's why you're here, after all).
 
 Each of these services is fully stateless and can be easily scaled up or down across machines.
 
@@ -33,6 +31,8 @@ gateway:
 - Reconnection
 - Gateway ratelimits
 
+[More info](gateway)
+
 ## Proxy
 
 The proxy is responsible for handling all of the outgoing HTTP requests to Discord. It ensures that
@@ -40,17 +40,21 @@ your bot complies with Discord's ratelimits under any circumstance. Eventually, 
 cache data and ensure that you never run into a performance bottleneck while fetching Discord data
 in your application.
 
-Your applications publish requests to RabbitMQ. The proxy consumes these and sends them to
-Discord as soon as possible. The proxy is responsible for:
+Your applications publish requests to the message broker. The proxy consumes these and sends them
+to Discord as soon as possible. The proxy is responsible for:
 
 - HTTP ratelimits
 - Caching (soon)
 
-## RabbitMQ
+## Message Broker
 
-RabbitMQ is a message broker that Spectacles relies on to consistently deliver messages to each
-service. You don't need to know how it works or how to use it, only that it's responsible for
-delivering messages between your applications.
+Spectacles supports 2 message broker options:
+
+1. Redis
+2. RabbitMQ
+
+We recommend Redis, since it is generally more performant and you will need to use it with the
+gateway and proxy.
 
 ## Command Handler
 
