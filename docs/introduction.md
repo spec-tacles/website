@@ -15,7 +15,7 @@ A basic Spectacles bot runs 4 services:
 3. Message broker
 4. Command handler
 
-The Spectacles organization provides the gateway and proxy services. You are responsible for
+The Spectacles organization provides the gateway, proxy and broker services. You are responsible for
 writing your own command handler (that's why you're here, after all).
 
 Each of these services is fully stateless and can be easily scaled up or down across machines.
