@@ -3,12 +3,17 @@ module.exports = {
     {
       type: 'category',
       label: 'Getting started',
-      items: ['introduction', 'gateway', 'proxy']
+      items: ['introduction', 'ping_pong'],
+    },
+    {
+      type: 'category',
+      label: 'Applications',
+      items: ['applications/gateway', 'applications/proxy'],
     },
     {
       type: 'category',
       label: 'Libraries',
-      items: ['libraries/js']
+      items: ['libraries/js'],
     },
     {
       type: 'category',

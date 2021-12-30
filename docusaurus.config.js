@@ -58,6 +58,9 @@ module.exports = {
       ],
       copyright: `Copyright © ${new Date().getFullYear()} Will Nelson. Built with Docusaurus.`,
     },
+    prism: {
+      additionalLanguages: ['toml', 'bash'],
+    },
   },
   presets: [
     [

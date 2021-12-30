@@ -20,49 +20,75 @@ writing your own command handler (that's why you're here, after all).
 
 Each of these services is fully stateless and can be easily scaled up or down across machines.
 
-## Gateway
-
-The gateway is a separate application that is solely responsible for connecting to Discord,
-ingesting events, and publishing them to RabbitMQ. It handles everything related to the Discord
-gateway:
-
-- Sharding
-- Intents
-- Reconnection
-- Gateway ratelimits
-
-[More info](gateway)
-
-## Proxy
-
-The proxy is responsible for handling all of the outgoing HTTP requests to Discord. It ensures that
-your bot complies with Discord's ratelimits under any circumstance. Eventually, the proxy will also
-cache data and ensure that you never run into a performance bottleneck while fetching Discord data
-in your application.
-
-Your applications publish requests to the message broker. The proxy consumes these and sends them
-to Discord as soon as possible. The proxy is responsible for:
-
-- HTTP ratelimits
-- Caching (soon)
-
 ## Message Broker
 
-Spectacles supports 2 message broker options:
+The message broker is the heart of a Spectacles application. To launch Redis as a message broker:
 
-1. Redis
-2. RabbitMQ
-
-We recommend Redis, since it is generally more performant and you will need to use it with the
-gateway and proxy.
+```bash
+docker run \
+	--rm -it \
+	-p 6379:6379 \
+	redis
+```
 
 ## Command Handler
 
-Your command handler is where all of your normal bot logic happens. Here you consume messages from
-the gateway, do any bot logic that you want, and maybe send messages back to the proxy. Spectacles
-provides numerous client libraries that you can use to interact with the other Spectacles services.
+To launch a basic command handler:
 
-- JavaScript
-- C#
-- Go
-- Rust
+1. Create a new project
+2. Install dependencies
+```bash
+npm i ioredis @spectacles/brokers
+```
+3. Create a command handler
+```ts
+import { Redis } from '@spectacles/brokers';
+import * as RedisClient from 'ioredis';
+
+const client = new RedisClient();
+const broker = new Redis('gateway', client);
+
+broker.on('MESSAGE_CREATE', async (msg, { ack }) => {
+	await ack();
+	console.log(msg);
+});
+
+broker.subscribe('MESSAGE_CREATE');
+```
+
+## Proxy
+
+The proxy will handle all of your outgoing HTTP requests to Discord. To launch the Spectacles
+proxy:
+
+```bash
+docker run \
+	--rm -it \
+	spectacles/proxy:latest
+```
+
+## Gateway
+
+The gateway manages your bot's connection to the Discord gateway. To launch the Spectacles gateway:
+
+:::note
+
+Replace the `DISCORD_TOKEN` environment variable with your bot's token.
+
+:::
+
+```bash
+docker run \
+	--rm -it \
+	-e DISCORD_TOKEN="your token" \
+	-e DISCORD_EVENTS=MESSAGE_CREATE \
+	-e DISCORD_INTENTS=GUILD,GUILD_MESSAGES \
+	-e BROKER_TYPE=redis \
+	-e REDIS_URL=localhost:6379 \
+	spectacles/gateway
+```
+
+## Next Steps
+
+Send a message in a guild that your bot is in, and you will see it in the console output of your
+command handler.
