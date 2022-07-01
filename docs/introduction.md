@@ -22,7 +22,8 @@ Each of these services is fully stateless and can be easily scaled up or down ac
 
 ## Message Broker
 
-The message broker is the heart of a Spectacles application. To launch Redis as a message broker:
+The message broker is the heart of a Spectacles application. Spectacles uses Redis as its message
+broker:
 
 ```bash
 docker run \

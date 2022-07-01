@@ -2,129 +2,181 @@
 id: gateway
 title: Gateway
 ---
+# Gateway
 
-The gateway is responsible for connecting your bot to Discord and is what will put your bot
-"online". The Spectacles Gateway automatically handles the complexities involved with reconnection,
-ratelimiting, and sharding and outputs a continuous stream of events to your applications.
+[![Docker pulls](https://img.shields.io/docker/pulls/spectacles/gateway)](https://hub.docker.com/r/spectacles/gateway)
 
-## Config
+The Spectacles gateway acts as a standalone process between your Discord bot application and the
+Discord gateway, allowing your bot to focus entirely on application logic. This has numerous
+benefits:
 
-The Spectacles Gateway has a variety of configuration options, but there are only 3 values that
-you *must* provide for the Gateway to work: your bot token, a list of
-[events](https://discord.com/developers/docs/topics/gateway#event-names) to publish, and
-[intents](https://discord.com/developers/docs/topics/gateway#gateway-intents).
+1. **Seamless upgrades.** If you configure the Spectacles Gateway to use one of the supported
+message broker protocols, you can restart your bot and not lose any messages from the Discord
+Gateway.
+2. **Load scalability.** With the Spectacles Gateway responsible for all of the Discord logic,
+you can scale your bot to handle high-load situations without worrying about restarting shards
+and sessions.
+3. **Feature scalability.** Since Discord messages get sent into a message broker, you can consume
+them from more than just your bot application. Making a dashboard is trivial since you can run a
+web application independently of your bot application and receive the exact same data.
 
-```toml
-token = ""
-events = ["GUILD_CREATE"]
-intents = ["GUILD"]
-```
+## Getting Started
 
-By default, the Gateway reads its config file from `gateway.toml` in the current working directory.
-You can also use environment variables in situations where that may be more convenient (e.g. when)
-running in a Docker Compose environment.
+The recommended usage is through Docker, but pre-built binaries are also available in Github
+Actions or you can compile it yourself using the latest Go compiler. Note that C build tools must
+be available on your machine.
 
-You can also specify this config using environment variables.
+### Example
 
-- `DISCORD_TOKEN`: your token
-- `DISCORD_EVENTS`: comma-separated string of gateway event names
-- `DISCORD_INTENTS`: comma-separated string of intents
+This example uses Docker to launch the most basic form of gateway with only the `MESSAGE_CREATE`
+event being output to STDOUT.
 
-## Standard IO
-
-By default, the Gateway simply outputs to standard output. If you'd like to run a quick test,
-here's a Docker command you can run to see incoming `MESSAGE_CREATE` events.
-
-```
-docker run --rm -it
-	-e DISCORD_TOKEN="your token"
-	-e DISCORD_EVENTS=MESSAGE_CREATE
-	-e DISCORD_INTENTS=GUILD,GUILD_MESSAGES
+```bash
+docker run --rm -it \
+	-e DISCORD_TOKEN="your token" \
+	-e DISCORD_EVENTS=MESSAGE_CREATE \
+	-e DISCORD_INTENTS=GUILD,GUILD_MESSAGES \
 	spectacles/gateway
 ```
 
-You can even publish data *back* to the gateway if you input MessagePack to the terminal.
+## Usage
 
-This is the JSON format used when using the STDIO mode of the gateway. `event`
-is mapped to the `t` property and `data` is mapped to the `d` property of a
-[Gateway packet](https://discord.com/developers/docs/topics/gateway#payloads-gateway-payload-structure).
-
-```json
-{
-	"event": "",
-	"data": {}
-}
+```
+Usage of gateway:
+  -config string
+        location of the gateway config file (default "gateway.toml")
+  -loglevel string
+        log level for the client (default "info")
 ```
 
-## Redis
+The gateway can be configured using either a config file or environment variables. Environment
+variables take precedence over their corresponding entry in the config file.
 
-Change your config to specify Redis as the broker type and provide Redis connection options.
+### Config file
 
 ```toml
-# base config here
+token = "" # Discord token
+events = [] # array of gateway event names to publish
+
+# https://discord.com/developers/docs/topics/gateway#gateway-intents
+intents = [] # array of gateway intents to send when identifying
+
+# everything below is optional
+
+[shards]
+count = 2
+ids = [0, 1]
 
 [broker]
-type = "redis"
+type = "redis" # can also use "amqp"
+group = "gateway"
+message_timeout = "2m" # this is the default value: https://golang.org/pkg/time/#ParseDuration
+
+[api]
+version = 10
+scheme = "https"
+host = "discord.com"
+
+# exposes Prometheus-compatible statistics
+[prometheus]
+address = ":8080"
+endpoint = "/metrics"
+
+[shard_store]
+type = "redis" # if left empty, shard info is stored locally
+prefix = "gateway" # string to prefix shard-store keys
+
+[presence]
+# https://discord.com/developers/docs/topics/gateway#update-status
 
 [redis]
 url = "localhost:6379"
-```
+pool_size = 5 # size of Redis connection pool
 
-You can now consume events from this Redis instance. To verify that this is working, simply execute
-`XREAD STREAMS {event_name} 0-0` on Redis, where `{event_name}` is replaced with a Discord event
-you are expecting (e.g. GUILD_CREATE).
-
-You can also change the shard store to Redis. This will allow your gateway sessions to persist past
-restarts in case your gateway dies.
-
-```toml
-[shard_store]
-type = "redis"
-prefix = "gateway"
-```
-
-## AMQP
-
-Change your config to specify AMQP as the broker type and provide AMQP connection options.
-
-```toml
-# base config here
-
-[broker]
-type = "amqp"
-
+# required for AMQP broker type
 [amqp]
 url = "amqp://localhost"
 ```
 
-To run a quick demonstration of the AMQP capabilities:
+Example presence:
 
-1. Setup a RabbitMQ instance
-```
-docker run --rm -it \
-	--name rabbit \
-	-p 5672:5672 \
-	-p 15672:15672 \
-	rabbitmq:3-management
-```
-2. Run the Gateway and connect it to RabbitMQ
-```
-docker run --rm -it \
-	--name gateway \
-	-e DISCORD_TOKEN="your token" \
-	-e DISCORD_EVENTS=MESSAGE_CREATE \
-	-e BROKER_TYPE=amqp \
-	-e AMQP_URL=amqp://localhost:5672
-```
-3. Send a message in any guild that your bot is in
-4. View the RabbitMQ dashboard at [`http://localhost:15672`](http://localhost:15672)
-5. Navigate to "Queues" and select "gateway:MESSAGE_CREATE"
-6. Expand "Get messages"
-7. Change "Ack Mode" to "Ack message requeue false"
-8. Click "Get Message(s)"
+```toml
+[presence]
+status = "online"
 
-You should see JSON output in your dashboard with the contents of the Discord message you sent.
+[presence.game]
+name = "test"
+type = 0
+```
 
-## Reference
+### Environment variables
 
-Detailed Spectacles Gateway documentation is available on [GitHub](https://github.com/spec-tacles/gateway).
+Each of the below environment variables corresponds exactly to the config file above.
+
+- `DISCORD_TOKEN`
+- `DISCORD_EVENTS`: comma-separated list of gateway events
+
+Optional:
+
+- `DISCORD_INTENTS`: comma-separated list of gateway intents
+- `DISCORD_RAW_INTENTS`: bitfield containing raw intent flags
+- `DISCORD_SHARD_COUNT`
+- `DISCORD_SHARD_IDS`: comma-separated list of shard IDs
+- `DISCORD_API_VERSION`
+- `DISCORD_API_SCHEME`
+- `DISCORD_API_HOST`
+- `BROKER_TYPE`
+- `BROKER_GROUP`
+- `BROKER_MESSAGE_TIMEOUT`
+- `PROMETHEUS_ADDRESS`
+- `PROMETHEUS_ENDPOINT`
+- `SHARD_STORE_TYPE`
+- `SHARD_STORE_PREFIX`
+- `DISCORD_PRESENCE`: JSON-formatted presence object
+
+External connections:
+
+- `AMQP_URL`
+- `REDIS_URL`
+- `REDIS_POOL_SIZE`
+
+## How It Works
+
+The Spectacles Gateway handles all of the Discord logic and simply forwards events to the specified
+message broker. Your application is completely unaware of the existence of shards and just focuses
+on handling incoming messages.
+
+By default, the Spectacles Gateway sends and receives data through standard input and output. For
+optimal use, you should use one of the available message broker protocols (Redis or AMQP) to
+send output to an external message broker (we recommend Redis). Your application can then
+consume messages from the message broker.
+
+Logs are output to STDERR and can be used to inspect the state of the gateway at any point. The
+Spectacles Gateway also offers integration with Prometheus to enable detailed stats collection.
+
+If you configure a shard storage solution (currently only Redis), shard information will be stored
+there and used if/when the Spectacles Gateway restarts. If the Gateway restarts quickly enough, it
+will be able to resume sessions without re-identifying to Discord. If you do not configure shard
+storage, the gateway will just store the info in local memory.
+
+## Goals
+
+- [x] Multiple output destinations
+	- [x] STDIO
+	- [x] AMQP
+	- [x] Redis
+- [x] Sharding
+	- [x] Internal
+	- [x] External
+	- [ ] Auto (fully managed)
+- [x] Distributable binary builds
+	- [x] Linux
+	- [x] Windows
+- [x] Multithreading
+- [x] Zero-alloc message handling
+- [x] Discord compression (ZSTD)
+- [x] Automatic restarting
+- [ ] Failover
+- [x] Session resuming
+	- [x] Local
+	- [x] Redis
