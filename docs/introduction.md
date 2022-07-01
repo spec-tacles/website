@@ -40,10 +40,10 @@ To launch a basic command handler:
 ```bash
 npm i ioredis @spectacles/brokers
 ```
-3. Create a command handler
-```ts
+3. Create a command handler called `index.mjs`
+```js
 import { Redis } from '@spectacles/brokers';
-import * as RedisClient from 'ioredis';
+import RedisClient from 'ioredis';
 
 const client = new RedisClient();
 const broker = new Redis('gateway', client);
@@ -55,6 +55,7 @@ broker.on('MESSAGE_CREATE', async (msg, { ack }) => {
 
 broker.subscribe('MESSAGE_CREATE');
 ```
+4. Run it with `node index.mjs`
 
 ## Proxy
 
@@ -64,6 +65,7 @@ proxy:
 ```bash
 docker run \
 	--rm -it \
+	--network host
 	spectacles/proxy:latest
 ```
 
@@ -80,6 +82,7 @@ Replace the `DISCORD_TOKEN` environment variable with your bot's token.
 ```bash
 docker run \
 	--rm -it \
+	--network host
 	-e DISCORD_TOKEN="your token" \
 	-e DISCORD_EVENTS=MESSAGE_CREATE \
 	-e DISCORD_INTENTS=GUILD,GUILD_MESSAGES \
