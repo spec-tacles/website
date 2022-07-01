@@ -14,7 +14,7 @@ The Spectacles proxy is responsible for handling all of the data interactions wi
 
 The proxy communicates with other services using the [Spectacles spec](https://github.com/spec-tacles/spec) over Redis.
 
-- JS: [`brokers.js`](https://github.com/spec-tacles/brokers.js)
+- JS: [`spectacles.js`](https://github.com/spec-tacles/spectacles.js)
 - C#: [`Spectacles.NET`](https://github.com/spec-tacles/Spectacles.NET)
 - Go: [`spec-tacles/go`](https://github.com/spec-tacles/go)
 - Rust: [`rustacles`](https://github.com/spec-tacles/rustacles)
