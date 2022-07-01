@@ -58,18 +58,6 @@ broker.subscribe('MESSAGE_CREATE');
 ```
 4. Run it with `node index.mjs`
 
-## Proxy
-
-The proxy will handle all of your outgoing HTTP requests to Discord. To launch the Spectacles
-proxy:
-
-```bash
-docker run \
-	--rm -it \
-	--network host
-	spectacles/proxy:latest
-```
-
 ## Gateway
 
 The gateway manages your bot's connection to the Discord gateway. To launch the Spectacles gateway:

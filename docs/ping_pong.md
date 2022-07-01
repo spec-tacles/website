@@ -3,8 +3,19 @@ id: ping_pong
 title: Ping Pong
 ---
 
-Now that your bot is receiving messages, you can respond to them. Open your command handler from
-the previous section.
+Now that your bot is receiving messages, you can respond to them.
+
+## Launching the Proxy
+
+The proxy will handle all of your outgoing HTTP requests to Discord. To launch the Spectacles
+proxy:
+
+```bash
+docker run \
+	--rm -it \
+	--network host \
+	spectacles/proxy:latest
+```
 
 ## Installing Dependencies
 
@@ -24,16 +35,17 @@ Replace `your bot token` with your Discord bot token.
 
 :::
 
-```ts
+```js
 import { Redis } from '@spectacles/brokers';
 import Rest from '@spectacles/proxy';
-import * as RedisClient from 'ioredis';
+import RedisClient from 'ioredis';
 
 const client = new RedisClient();
-const broker = new Redis('gateway', client);
-const rest = new Rest(broker, 'your bot token');
+const gatewayBroker = new Redis('gateway', client);
+const proxyBroker = new Redis('proxy', client);
+const rest = new Rest(proxyBroker, 'your bot token');
 
-broker.on('MESSAGE_CREATE', async (msg, { ack }) => {
+gatewayBroker.on('MESSAGE_CREATE', async (msg, { ack }) => {
 	await ack();
 	console.log(msg);
 
@@ -42,7 +54,7 @@ broker.on('MESSAGE_CREATE', async (msg, { ack }) => {
 	}
 });
 
-broker.subscribe('MESSAGE_CREATE');
+gatewayBroker.subscribe('MESSAGE_CREATE');
 ```
 
 ## Next Steps
