@@ -40,10 +40,6 @@ module.exports = {
               label: 'Discord',
               href: 'https://discord.gg/zU3vha6',
             },
-            {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/spectacles',
-            },
           ],
         },
         {

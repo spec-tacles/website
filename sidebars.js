@@ -3,7 +3,7 @@ module.exports = {
     {
       type: 'category',
       label: 'Getting started',
-      items: ['introduction', 'ping_pong'],
+      items: ['introduction', 'ping_pong', 'example'],
     },
     {
       type: 'category',
